@@ -1,4 +1,4 @@
-[```mermaid
+```mermaid
 sequenceDiagram
 Alice->>John: Hello John, how are you?
 loop Healthcheck
@@ -8,4 +8,4 @@ Note right of John: Rational thoughts!
 John-->>Alice: Great!
 John->>Bob: How about you?
 Bob-->>John: Jolly good!
-```](url)
+```
