@@ -12,8 +12,34 @@ const Display = ({ data, showCountryDetails, selectCountry }) => {
   ))
 }
 
+const Weather = ({ country, data, setData }) => {
+  const [lat, lon] = country.latlng;
+  useEffect(() => {
+    axios.get(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${process.env.REACT_APP_API_KEY}&units=metric`)
+      .then(response => {
+        console.log(response.data)
+        const newData = {
+          temp: response.data.main.temp,
+          icon: response.data.weather[0].icon,
+          wind: response.data.wind.speed
+        }
+        setData(newData);
+      })
+  }, [])
+
+  return (
+    <div>
+      <h1>Weather</h1>
+      <p>temperature: {data.temp} Celsius</p>
+      <img src={`http://openweathermap.org/img/wn/${data.icon}@2x.png`}/>
+      <p>wind: {data.wind} m/s</p>
+    </div>
+  )
+}
+
 const App = () => {
   const [countriesData, setCountriesData] = useState([]);
+  const [weatherData, setWeatherData] = useState([{temp: '', icon: '', wind: ''}]);
   const [filteredCountries, setFilteredCountries] = useState([]);
   const [filter, setFilter] = useState('');
 
@@ -27,6 +53,7 @@ const App = () => {
           {Object.values(country.languages).map(language => <li key={country.name.common}>{language}</li>)}
         </ul>
         <img alt='Country Flag' src={country.flags.png} />
+        <Weather country={country} data={weatherData} setData={setWeatherData} />
       </div>
     )
   }
