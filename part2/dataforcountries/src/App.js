@@ -50,7 +50,7 @@ const App = () => {
         <p>area {country.area}</p>
         <h4>languages:</h4>
         <ul>
-          {Object.values(country.languages).map(language => <li key={country.name.common}>{language}</li>)}
+          {Object.values(country.languages).map(language => <li key={country.name.official}>{language}</li>)}
         </ul>
         <img alt='Country Flag' src={country.flags.png} />
         <Weather country={country} data={weatherData} setData={setWeatherData} />
@@ -68,7 +68,7 @@ const App = () => {
   }
 
   const selectCountry = (name) => {
-    setFilteredCountries(countriesData.filter(country => country.name.common === name))
+    setFilteredCountries(countriesData.find(country => country.name.common === name))
   }
 
 
