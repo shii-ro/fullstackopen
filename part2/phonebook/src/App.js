@@ -9,7 +9,7 @@ import Message from "./components/Message";
 const App = () => {
 
   const [persons, setPersons] = useState([]);
-  const [newPerson, setNewPerson] = useState({ name: ' ', number: '' })
+  const [newPerson, setNewPerson] = useState({ name: '', number: '' })
   const [filter, setFilter] = useState('');
   const [message, setMessage] = useState(null);
 

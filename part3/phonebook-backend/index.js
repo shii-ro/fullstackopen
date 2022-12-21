@@ -1,56 +1,84 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
-
+const Person = require('./models/person')
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3000
+
 
 morgan.token('type', (req, res) => { 
-    console.log(req.body);
     return JSON.stringify(req.body);
 })
 
+const errorHandler = (error, req, res, next) => {
+    console.error(error.message)
+  
+    if (error.name === 'CastError') {
+      return res.status(400).send({ error: 'malformatted id' })
+    } 
+  
+    next(error)
+  }  
+
 app.use(express.json())
+app.use(express.static('build'))
 app.use(cors())
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :type'))
 
-let phonebook = [
-    { name: 'Arto Hellas', number: '040-123456', id: 1 },
-    { name: 'Ada Lovelace', number: '39-44-5323523', id: 2 },
-    { name: 'Dan Abramov', number: '12-43-234345', id: 3 },
-    { name: 'Mary Poppendieck', number: '39-23-6423122', id: 4 }
-]
-
-app.get('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id);
-    const person = phonebook.find(person => person.id === id);
-    if (person) {
-        res.send(person);
-    } else {
-        res.status(404).end();
-    }
+app.get('/api/persons/:id', (req, res, next) => {
+    Person.findById(req.params.id)
+        .then(person => {
+            if (person) res.json(person);
+            else res.status(404).end();
+        }).catch((err) => next(err))
 })
 
-app.delete('/api/persons/:id', (req, res) => {
-    const id = Number(req.params.id);
-    phonebook = phonebook.filter(person => person.id !== id);
-    res.status(204).end();
+app.put('/api/persons/:id', (req, res, next) => {
+    const body = req.body
+    const person = {
+        name: body.name,
+        number: body.number
+    }
+
+    Person.findByIdAndUpdate(req.params.id, person, { new: true })
+        .then(updatedPerson => { res.json(updatedPerson) })
+        .catch((err) => next(err))
+})
+
+app.delete('/api/persons/:id', (req, res, next) => {
+    Person.findByIdAndDelete(req.params.id)
+        .then(
+            result => res.status(204).end()
+        ).catch((err) => next(err));
 })
 
 app.get(`/api/persons`, (req, res) => {
-    res.send(phonebook);
+    Person.find({}).then(person => {
+        res.json(person)
+    })
 })
 
-app.post(`/api/persons`, (req, res) => {
-    const newPerson = { ...req.body, id: Math.floor(Math.random() * 1337) };
+app.post(`/api/persons`, (req, res, next) => {
+    const newPerson = new Person({ ...req.body });
     if (!newPerson.name || !newPerson.number) {
         return res.status(400).json({ error: 'must insert name or number' })
     }
-    if (phonebook.find(person => person.name === newPerson.name)) {
-        return res.status(400).json({ error: `${newPerson.name} is already added in the phonebook` })
-    }
-    phonebook = phonebook.concat(newPerson);
-    res.json(newPerson);
+
+    // Person.find({ name: newPerson.name })
+    //     .then(result => {
+    //         if (result[0]) {
+    //             console.log('Person already in the database, updating')
+    //             Person.findByIdAndUpdate(result[0].id, newPerson, { name: newPerson.name, number: newPerson.number })
+    //                 .then(updatedPerson => res.json(updatedPerson))
+    //                 .catch((err) => next(err))
+    //         }
+    //         else newPerson.save().then(savedPerson => {
+    //             res.json(savedPerson)
+    //         })
+    //     })
+    newPerson.save().then(savedPerson => {
+            res.json(savedPerson)
+        })
 })
 
 app.get('/info', (req, res) => {
@@ -60,6 +88,8 @@ app.get('/info', (req, res) => {
             <p>${date.toDateString()} ${date.toTimeString()}</p>
             `);
 })
+
+app.use(errorHandler)
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`)
