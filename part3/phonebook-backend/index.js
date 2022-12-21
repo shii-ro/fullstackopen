@@ -34,11 +34,7 @@ app.get('/api/persons/:id', (req, res, next) => {
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
-    const body = req.body
-    const person = {
-        name: body.name,
-        number: body.number
-    }
+    const person = {...req.body}
 
     Person.findByIdAndUpdate(req.params.id, person, { new: true })
         .then(updatedPerson => { res.json(updatedPerson) })
@@ -64,18 +60,6 @@ app.post(`/api/persons`, (req, res, next) => {
         return res.status(400).json({ error: 'must insert name or number' })
     }
 
-    // Person.find({ name: newPerson.name })
-    //     .then(result => {
-    //         if (result[0]) {
-    //             console.log('Person already in the database, updating')
-    //             Person.findByIdAndUpdate(result[0].id, newPerson, { name: newPerson.name, number: newPerson.number })
-    //                 .then(updatedPerson => res.json(updatedPerson))
-    //                 .catch((err) => next(err))
-    //         }
-    //         else newPerson.save().then(savedPerson => {
-    //             res.json(savedPerson)
-    //         })
-    //     })
     newPerson.save().then(savedPerson => {
             res.json(savedPerson)
         })
