@@ -1,24 +1,26 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
-const Person = require('./models/person')
+const Person = require('./models/person');
 const app = express();
 const PORT = process.env.PORT || 3000
 
 
-morgan.token('type', (req, res) => { 
+morgan.token('type', (req, res) => {
     return JSON.stringify(req.body);
 })
 
 const errorHandler = (error, req, res, next) => {
     console.error(error.message)
-  
     if (error.name === 'CastError') {
-      return res.status(400).send({ error: 'malformatted id' })
-    } 
-  
+        return res.status(400).send({ error: 'malformatted id' })
+    }
+    if(error.name === 'ValidationError') {
+        return res.status(400).json({error: error.message})
+    }
+
     next(error)
-  }  
+}
 
 app.use(express.json())
 app.use(express.static('build'))
@@ -34,9 +36,9 @@ app.get('/api/persons/:id', (req, res, next) => {
 })
 
 app.put('/api/persons/:id', (req, res, next) => {
-    const person = {...req.body}
+    const person = { ...req.body }
 
-    Person.findByIdAndUpdate(req.params.id, person, { new: true })
+    Person.findByIdAndUpdate(req.params.id, person, { new: true, runValidators: true })
         .then(updatedPerson => { res.json(updatedPerson) })
         .catch((err) => next(err))
 })
@@ -60,9 +62,21 @@ app.post(`/api/persons`, (req, res, next) => {
         return res.status(400).json({ error: 'must insert name or number' })
     }
 
-    newPerson.save().then(savedPerson => {
-            res.json(savedPerson)
-        })
+    Person.countDocuments({ name: newPerson.name }, { limit: 1})
+        .then(
+            person => {
+                console.log(person, newPerson);
+                if (person) return res.status(400).json({ error: 'person already exists in database!' });
+                else {
+                    newPerson.save()
+                        .then(savedPerson => {
+                            return res.json(savedPerson);
+                        })
+                        .catch(error => next(error));
+                }
+            }
+        )
+        .catch((err) => next(err));
 })
 
 app.get('/info', (req, res) => {

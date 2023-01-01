@@ -62,7 +62,7 @@ const App = () => {
             }
           )
           .catch(error => {
-            newMessage(`${newPerson.name} has already been removed from server`, false)
+            newMessage(error.response.data.error, false)
           })
       };
       return;
