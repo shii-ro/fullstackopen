@@ -5,4 +5,10 @@ const totalLikes = (blogs) => {
   return result;
 };
 
-module.exports = { dummy, totalLikes };
+const favoriteBlog = (blogs) => {
+  const favorite = blogs.reduce((a, b) => (a.likes > b.likes ? a : b));
+  const result = { title: favorite.title, author: favorite.author, likes: favorite.likes };
+  return result;
+};
+
+module.exports = { dummy, totalLikes, favoriteBlog };
