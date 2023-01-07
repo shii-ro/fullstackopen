@@ -11,4 +11,15 @@ const favoriteBlog = (blogs) => {
   return result;
 };
 
-module.exports = { dummy, totalLikes, favoriteBlog };
+const mostBlogs = (blogs) => {
+  const authors = [];
+  blogs.forEach((blog) => {
+    authors[blog.author] = (!authors[blog.author]) ? 1 : authors[blog.author] + 1;
+  });
+  const obj = Object.entries(authors).map(([k, v]) => ({ author: k, blogs: v }));
+  return obj.reduce((a, b) => (a > b ? a : b));
+};
+
+module.exports = {
+  dummy, totalLikes, favoriteBlog, mostBlogs,
+};
