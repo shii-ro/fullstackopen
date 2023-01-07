@@ -20,6 +20,16 @@ const mostBlogs = (blogs) => {
   return obj.reduce((a, b) => (a > b ? a : b));
 };
 
+const mostLikes = (blogs) => {
+  const authors = [];
+  blogs.forEach((blog) => {
+    if (!authors[blog.author]) authors[blog.author] = 0;
+    authors[blog.author] += blog.likes;
+  });
+  const obj = Object.entries(authors).map(([k, v]) => ({ author: k, likes: v }));
+  return obj.reduce((a, b) => (a.likes > b.likes ? a : b));
+};
+
 module.exports = {
-  dummy, totalLikes, favoriteBlog, mostBlogs,
+  dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes,
 };
